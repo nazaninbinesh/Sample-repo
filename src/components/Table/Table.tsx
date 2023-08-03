@@ -4,12 +4,14 @@ import TableHeaderColumn from "./TableHeaderColumn";
 interface TablePropsType {
     data: Array<Record<string, string>>;
     title: string;
+    error: Array<any>;
     buttons: React.ReactNode;
   }
   
-  function Table({ data, title, buttons }: TablePropsType) {
+  function Table({ data, title, error, buttons }: TablePropsType) {
+    console.log("error", error)
     return (
-      <div className="px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8 w-full">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
             <h1 className="text-base font-semibold leading-6 text-gray-900">
@@ -31,7 +33,7 @@ interface TablePropsType {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {data.map((row, index) => (
-                    <tr key={index}>
+                    <tr key={index} className={error?.includes(index) ? 'bg-red-50' : ''}>
                       {Object.entries(row).map(([key, value]) => (
                         <TableDataColumn key={key} value={value} />
                       ))}
