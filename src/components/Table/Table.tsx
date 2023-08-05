@@ -10,7 +10,6 @@ interface TablePropsType {
   }
   
   function Table({ data, title, error, buttons, timeEstimation }: TablePropsType) {
-    //console.log("error", error)
     return (
       <div className="px-4 sm:px-6 lg:px-8 w-full">
         <div className="sm:flex sm:items-center">
@@ -28,8 +27,8 @@ interface TablePropsType {
             <table className="min-w-full divide-y divide-gray-300 overflow-y-scroll">
                 <thead className="sticky top-0">
                  <tr>
-                    {Object.entries(data[0]).map(([key, value]) => (
-                      <TableHeaderColumn key={key} value={key} />
+                    {Object.entries(data[0]).map(([key, index]) => (
+                      <TableHeaderColumn key={index} value={key} />
                     ))}
                   </tr>
                 </thead>

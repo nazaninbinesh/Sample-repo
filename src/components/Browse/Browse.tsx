@@ -5,7 +5,7 @@ interface BrowserProps {
   disabled: Boolean;
 }
 
-const Browse: React.FC<BrowserProps> = ({ onChange, disabled }) => {
+const Browse: React.FC<BrowserProps> = ({ onChange }) => {
   return (
     <>
       <div className="w-full p-6">

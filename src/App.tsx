@@ -8,6 +8,7 @@ import ReviewPage from "./components/ReviewPage/ReviewPage";
 import { Octokit } from "octokit";
 
 type CurrentPageType = "PickerPage" | "reviewPage" | "resultsPage";
+
 interface ReviewTableDataType {
   searchKeywords: string;
   username: string;
@@ -31,7 +32,7 @@ function App() {
     React.useState<Array<ResultTableDataType>>();
   const [errors, setErrors] = React.useState<Object[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
-  const [pageNumber, setPageNumber] = React.useState<number>(1);
+  const [apiRequestsDone, setApiRequestsDone] = React.useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -39,27 +40,29 @@ function App() {
     auth: "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",
   });
 
-  //Using library like papaparse is recommended
-  const parseCSV = React.useCallback(async (file: File, pageNumber: number) => {
-    setLoading(true);
-    const text = await file.text();
-    const lines = text.split("\n");
-    //const itemsPerPage = 15; // Set the number of items to be processed per page
+  // Using library like papaparse is recommended
+  // Reading the result chunk must be done here
+  const parseCSV = React.useCallback(async (file: File) => {
+    try {
+      setLoading(true);
+      const text = await file.text();
+      const lines = text.split("\n");
 
-    // Calculate the start and end indexes for the current page
-    //const startIndex = (pageNumber - 1) * itemsPerPage;
-    //const endIndex = Math.min(startIndex + itemsPerPage, lines.length);
+      // Process the CSV data for the current page
+      const currentPageData = lines.map((row) => {
+        const [searchKeywords, username, context] = row.split(",");
+        return { searchKeywords, username, context };
+      });
 
-    // Process the CSV data for the current page
-    const currentPageData = lines.map((row) => {
-      const [searchKeywords, username, context] = row.split(",");
-      return { searchKeywords, username, context };
-    });
-
-    // Update the state with the current page's data
-    setReviewData(currentPageData);
-    navigate("/review", { state: currentPageData });
-    setLoading(false);
+      // Update the state with the current page's data
+      setReviewData(currentPageData);
+      navigate("/review", { state: currentPageData });
+    } catch (error) {
+      // Handle any errors that may occur during parsing or navigation
+      console.error("Error occurred while parsing CSV:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   //find duplicated onjects
@@ -73,7 +76,6 @@ function App() {
       obj1?.context?.trim() === obj2?.context?.trim()
     );
   }
-
   function findDuplicateObjects(
     jsonArray: ReviewTableDataType[]
   ): { object: ReviewTableDataType; index: number }[] {
@@ -116,6 +118,7 @@ function App() {
     return blanks;
   }
 
+  //Deleting rows contain error
   const deleteRowsHandler = () => {
     setLoading(true);
     const cleanData = reviewData?.filter((row, index) => {
@@ -128,9 +131,61 @@ function App() {
     setLoading(false);
   };
 
+  //Browse the file and read it
+  const browseHandling = (event: {
+    target: { files: React.SetStateAction<File | undefined>[] };
+  }) => {
+    setSelectedFile(event.target.files?.[0]);
+    parseCSV(event.target.files?.[0]);
+  };
+
+  //Search
+  const searchHandler = () => {
+    setLoading(true);
+    try {
+      reviewData?.forEach((row) => {
+        octokit.rest.search
+          .repos({
+            q: encodeURIComponent(row.searchKeywords),
+          })
+          .then(({ data: { total_count } }) => {
+            const result =
+              total_count > 0
+                ? total_count + " repositories found"
+                : "No repositories found";                
+            setResultData((prevResultData) => [
+              ...(prevResultData ?? []),
+              { ...row, searchResults: result },
+            ]);
+
+            setLoading(false);
+            navigate("/results", { state: result });
+          });
+      });
+      setResultData(resultData);
+      setLoading(false);
+    } catch (error) {
+      // Handle any errors that might occur during API requests
+      console.error("Error fetching search results:", error);
+      setLoading(false);
+    }
+
+   
+  };
+
+  //New Upload CSV button (back button)
+  const backButtonHandler = () => {
+    debugger;
+    setReviewData([]);
+    setResultData([]);
+    setErrors([]);
+    setCurrentPage("PickerPage");
+    navigate("/");
+  };
+
   React.useEffect(() => {
     if (currentPage === "PickerPage" && selectedFile && !reviewData) {
-      parseCSV(selectedFile, pageNumber);
+      parseCSV(selectedFile);
     } else if (reviewData?.length === 0) {
       setCurrentPage("PickerPage");
     } else if (
@@ -139,59 +194,24 @@ function App() {
       reviewData.length > 0
     ) {
       setCurrentPage("reviewPage");
-    } else if (currentPage === "reviewPage" && resultData && resultData.length > 0) {
+    } else if (
+      currentPage === "reviewPage" &&
+      resultData &&
+      resultData.length > 0
+    ) {
       setCurrentPage("resultsPage");
     }
-  }, [currentPage, selectedFile, parseCSV, reviewData, resultData, pageNumber]);
+  }, [currentPage, selectedFile, parseCSV, reviewData, resultData]);
 
-  React.useEffect(() => {
-    console.log(reviewData);
+  React.useEffect(() => {    
     findDuplicateObjects(reviewData);
     findObjectsWithEmptySearchKeywords(reviewData);
   }, [reviewData]);
-
-  const browseHandling = (event: {
-    target: { files: React.SetStateAction<File | undefined>[] };
-  }) => {
-    setSelectedFile(event.target.files?.[0]);
-    parseCSV(event.target.files?.[0], pageNumber);
-  };
-
-  const searchHandler = () => {
-    setLoading(true)
-    reviewData.forEach((row) => {
-      octokit.rest.search
-        .repos({
-          q: encodeURIComponent(row.searchKeywords),
-        })
-        .then(({ data: { total_count } }) => {
-          const result =
-            total_count > 0
-              ? total_count + " repositories found"
-              : "No repositories found";
-          setResultData((prevResultData) => [
-            ...(prevResultData ?? []),
-            { ...row, searchResults: result },
-          ]);
-          navigate("/results", { state: result });
-          setLoading(false);
-        });
-    });
-  };
-
-  const backButtonHandler = () => {
-    debugger;
-    setReviewData([]);
-    setResultData([]);
-    setErrors([]);
-    setCurrentPage("PickerPage");
-    navigate("/");    
-  };
-
+  
   return (
     <>
       <div className="container mx-auto m-11">
-        {currentPage !== "PickerPage" && !loading &&(
+        {currentPage !== "PickerPage" && !loading && (
           <button
             className="mb-4 block text-[#6941C6]"
             onClick={backButtonHandler}
@@ -227,7 +247,7 @@ function App() {
               />
               <Route
                 path="/results"
-                element={<ResultsPage data={reviewData} />}
+                element={<ResultsPage data={resultData} />}
               />
             </Routes>
           </div>

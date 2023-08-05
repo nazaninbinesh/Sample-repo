@@ -6,12 +6,12 @@ interface ResultDataType {
 }
 
 const ResultsPage: React.FC<ResultDataType> = ({data}) => {
-  return (
+  return (  
     <>
       <Table
         data={data}
         title="Search Results"
-        timeEstimation="Finish estimated time: 2 hours and 31 minutes" error={[]} buttons={undefined}              />
+        timeEstimation="Finish estimated time: 2 hours and 31 minutes" error={[]} buttons={undefined} />
     </>
   );
 };

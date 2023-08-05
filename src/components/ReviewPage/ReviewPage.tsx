@@ -2,18 +2,23 @@ import React from "react";
 import Button from "../Button/Button";
 import Table from "../Table/Table";
 
-
 interface ReviewDataType {
   data: any;
-  errors:any;
+  errors: any;
   deleteRowsHandler: any;
-  searchHandler:any;
+  searchHandler: any;
   octik: any;
-  loading: boolean; 
+  loading: boolean;
 }
 
-const ReviewPage: React.FC<ReviewDataType> = ({ data, errors, deleteRowsHandler, octik, loading, searchHandler}) => {
-
+const ReviewPage: React.FC<ReviewDataType> = ({
+  data,
+  errors,
+  deleteRowsHandler,
+  octik,
+  loading,
+  searchHandler,
+}) => {
   return (
     <>
       <>
@@ -29,6 +34,7 @@ const ReviewPage: React.FC<ReviewDataType> = ({ data, errors, deleteRowsHandler,
                   title={`Delete ${errors.length} Errors`}
                   onClick={deleteRowsHandler}
                   className="border-2 border-orange-300 rounded-md px-3 py-2 text-center text-orange-700 text-sm font-semibold mt-5	 mr-5	shadow-sm hover:bg-orange-300  hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  disabled={false}
                 />
               )}
               <Button
@@ -42,6 +48,7 @@ const ReviewPage: React.FC<ReviewDataType> = ({ data, errors, deleteRowsHandler,
             </>
           }
         />
+        {/* Error could be shown here but the UI Figma doesn't support it */}
         {/* <ul>
                 {errors &&
                   errors.map((err) => {
