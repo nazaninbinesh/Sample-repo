@@ -1,5 +1,5 @@
 # Project Name
-- browseai-assignment
+- Sample-repo
 
 # Instructions on how to run your application.
 # Prerequisites
@@ -9,9 +9,9 @@
 
 # Installation
 - Clone this repository to your local machine:    
-    - git clone https://github.com/nazaninbinesh/browseai-assignment.git
+    - git clone https://github.com/nazaninbinesh/Sample-repo.git
 - Navigate to the project directory:
-    - cd browseai-assignment
+    - cd Sample-repo
 - Install the required dependencies:
     - npm install
 
