@@ -41,13 +41,12 @@
 
 
 # Lessons Learned
-
-## Reading Heavy Files
+- Reading Heavy Files
 From the outset, I should have focused on efficiently handling large files with 100k rows by implementing chunk-wise reading. While the current implementation works well for light .csv files, it tends to cause browser crashes when dealing with heavy files.
 
-## TypeScript Usage
+-TypeScript Usage
 It's crucial to use TypeScript consistently throughout the project, especially since the files are in the .ts format. Avoid using the "any" type for variables to prevent potential errors.
 
-## Unfinished API Call
+- Unfinished API Call
 I initially planned to make an API call to GitHub repositories with the same username, but I didn't complete this feature. I spent some time learning how to perform an API call on GitHub and successfully implemented it using Octokit.
 
