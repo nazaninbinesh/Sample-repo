@@ -175,7 +175,6 @@ function App() {
 
   //New Upload CSV button (back button)
   const backButtonHandler = () => {
-    debugger;
     setReviewData([]);
     setResultData([]);
     setErrors([]);
